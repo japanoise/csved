@@ -34,9 +34,6 @@ You can run it with the flag `-d` for extra debugging information.
 - Clipboard
 - Home and End, tab (excel-esque navigation)
 - Tab completion in a column
-- Don't start from scratch when editing a cell (would require editing
-  termutil.Prompt; this use-case seems pretty normal so maybe write a new Edit
-  function that takes a default value)
 
 ## copying
 

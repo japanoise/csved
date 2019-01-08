@@ -170,7 +170,7 @@ func main() {
 					cbuf.ysel++
 				}
 			case "RET":
-				val := termutil.Prompt("Value for this cell?", refresh)
+				val := termutil.Edit(cbuf.getSel(), "Value for this cell?", refresh)
 				cbuf.setSel(val)
 			case "C-t":
 				cbuf.titles = !cbuf.titles
