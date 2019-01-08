@@ -123,10 +123,16 @@ func loadFile(filename string) error {
 }
 
 func main() {
-	// argparse
+	// flag parse
 	flag.BoolVar(&debug, "d", false, "print debug information")
 	flag.Parse()
 
+	// start termbox
+	termbox.Init()
+	defer termbox.Close()
+	sx, sy := termbox.Size()
+
+	// get files
 	if flag.NArg() > 0 {
 		err := loadFile(flag.Args()[0])
 		if err != nil {
@@ -134,11 +140,6 @@ func main() {
 			os.Exit(1)
 		}
 	}
-
-	// start termbox
-	termbox.Init()
-	defer termbox.Close()
-	sx, sy := termbox.Size()
 
 	// main loop
 	for {
