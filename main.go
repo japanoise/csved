@@ -54,6 +54,7 @@ func refresh(sx, sy int) {
 					for i := 0; i < col.maxWidth; i++ {
 						termutil.PrintRune(x+i, y, ' ', termbox.AttrReverse|termbox.ColorRed)
 					}
+					termbox.SetCursor(x, y)
 					termutil.PrintstringColored(termbox.AttrReverse|termbox.ColorRed, col.data[0], x, y)
 				} else {
 					termutil.PrintstringColored(termbox.AttrReverse, col.data[0], x, y)
@@ -62,6 +63,7 @@ func refresh(sx, sy int) {
 				for i := 0; i < col.maxWidth; i++ {
 					termutil.PrintRune(x+i, y, ' ', termbox.AttrReverse)
 				}
+				termbox.SetCursor(x, y)
 				termutil.PrintstringColored(termbox.AttrReverse, col.data[y+cbuf.yoffset], x, y)
 			} else {
 				termutil.Printstring(col.data[y+cbuf.yoffset], x, y)
@@ -85,6 +87,27 @@ func refresh(sx, sy int) {
 	termbox.Flush()
 }
 
+func getDelim(rfunc func(int, int)) rune {
+	choice := termutil.ChoiceIndex("What delimiter does the file use?", []string{"Commas (',')",
+		"Tabs ('        ')", "Spaces (' ')", "Other"}, 0)
+	switch choice {
+	case 0:
+		return ','
+	case 1:
+		return '\t'
+	case 2:
+		return ' '
+	default:
+		termbox.Clear(termbox.ColorDefault, termbox.ColorDefault)
+		var delim string
+		for delim == "" {
+			delim = termutil.Prompt("What delimiter does the file use?", rfunc)
+		}
+		ru, _ := utf8.DecodeRuneInString(delim)
+		return ru
+	}
+}
+
 func loadFile(filename string) error {
 	if strings.HasSuffix(strings.ToLower(filename), ".tsv") {
 		var err error
@@ -95,30 +118,23 @@ func loadFile(filename string) error {
 		cbuf, err = createBufferFromFile(filename, ',')
 		return err
 	}
-	choice := termutil.ChoiceIndex("What delimiter does the file use?", []string{"Commas (',')", "Tabs ('        ')", "Spaces (' ')", "Other"}, 0)
-	switch choice {
-	case 0:
-		var err error
-		cbuf, err = createBufferFromFile(filename, ',')
-		return err
-	case 1:
-		var err error
-		cbuf, err = createBufferFromFile(filename, '\t')
-		return err
-	case 2:
-		var err error
-		cbuf, err = createBufferFromFile(filename, ' ')
-		return err
-	default:
-		termbox.Clear(termbox.ColorDefault, termbox.ColorDefault)
-		var delim string
-		for delim == "" {
-			delim = termutil.Prompt("What delimiter does the file use?", nil)
+	var err error
+	cbuf, err = createBufferFromFile(filename, getDelim(nil))
+	return err
+}
+
+func saveFile() {
+	if cbuf.filename == "" {
+		for cbuf.filename == "" {
+			cbuf.filename = termutil.Prompt("Filename to save to?", refresh)
 		}
-		ru, _ := utf8.DecodeRuneInString(delim)
-		var err error
-		cbuf, err = createBufferFromFile(filename, ru)
-		return err
+		cbuf.delim = getDelim(refresh)
+	}
+	err := cbuf.save()
+	if err == nil {
+		message = fmt.Sprintf("Saved %s", cbuf.filename)
+	} else {
+		message = err.Error()
 	}
 }
 
@@ -139,6 +155,8 @@ func main() {
 			fmt.Fprintln(os.Stderr, err)
 			os.Exit(1)
 		}
+	} else {
+		cbuf = createBlankBuffer()
 	}
 
 	// main loop
@@ -176,12 +194,7 @@ func main() {
 			case "C-t":
 				cbuf.titles = !cbuf.titles
 			case "C-s":
-				err := cbuf.save()
-				if err == nil {
-					message = fmt.Sprintf("Saved %s", cbuf.filename)
-				} else {
-					message = err.Error()
-				}
+				saveFile()
 			case "C-c":
 				return
 			}

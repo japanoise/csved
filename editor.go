@@ -82,6 +82,13 @@ func (buf *buffer) getSel() string {
 	return buf.cols[buf.xsel].data[buf.ysel]
 }
 
+func createBlankBuffer() *buffer {
+	buf := buffer{}
+	buf.addColumn()
+	buf.addRow()
+	return &buf
+}
+
 func createBufferFromFile(filename string, delim rune) (*buffer, error) {
 	f, err := os.Open(filename)
 	if err != nil {
