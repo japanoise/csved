@@ -13,6 +13,7 @@ import (
 
 var (
 	cbuf    *buffer
+	buffers []*buffer
 	message string
 	debug   bool
 )
@@ -87,9 +88,9 @@ func refresh(sx, sy int) {
 	termbox.Flush()
 }
 
-func getDelim(rfunc func(int, int)) rune {
-	choice := termutil.ChoiceIndex("What delimiter does the file use?", []string{"Commas (',')",
-		"Tabs ('        ')", "Spaces (' ')", "Other"}, 0)
+func getDelim(fn string, rfunc func(int, int)) rune {
+	choice := termutil.ChoiceIndex(fmt.Sprintf("What delimiter does %s use?", fn),
+		[]string{"Commas (',')", "Tabs ('        ')", "Spaces (' ')", "Other"}, 0)
 	switch choice {
 	case 0:
 		return ','
@@ -101,7 +102,7 @@ func getDelim(rfunc func(int, int)) rune {
 		termbox.Clear(termbox.ColorDefault, termbox.ColorDefault)
 		var delim string
 		for delim == "" {
-			delim = termutil.Prompt("What delimiter does the file use?", rfunc)
+			delim = termutil.Prompt(fmt.Sprintf("What delimiter does %s use?", fn), rfunc)
 		}
 		ru, _ := utf8.DecodeRuneInString(delim)
 		return ru
@@ -119,7 +120,7 @@ func loadFile(filename string) error {
 		return err
 	}
 	var err error
-	cbuf, err = createBufferFromFile(filename, getDelim(nil))
+	cbuf, err = createBufferFromFile(filename, getDelim(filename, nil))
 	return err
 }
 
@@ -128,7 +129,7 @@ func saveFile() {
 		for cbuf.filename == "" {
 			cbuf.filename = termutil.Prompt("Filename to save to?", refresh)
 		}
-		cbuf.delim = getDelim(refresh)
+		cbuf.delim = getDelim(cbuf.filename, refresh)
 	}
 	err := cbuf.save()
 	if err == nil {
@@ -136,6 +137,15 @@ func saveFile() {
 	} else {
 		message = err.Error()
 	}
+}
+
+func switchBuffer() {
+	choices := make([]string, len(buffers))
+	for i, buf := range buffers {
+		choices[i] = buf.filename
+	}
+	nbuf := termutil.ChoiceIndex("Change to which buffer?", choices, 0)
+	cbuf = buffers[nbuf]
 }
 
 func main() {
@@ -150,13 +160,17 @@ func main() {
 
 	// get files
 	if flag.NArg() > 0 {
-		err := loadFile(flag.Args()[0])
-		if err != nil {
-			fmt.Fprintln(os.Stderr, err)
-			os.Exit(1)
+		for _, fn := range flag.Args() {
+			err := loadFile(fn)
+			if err != nil {
+				fmt.Fprintln(os.Stderr, err)
+				os.Exit(1)
+			}
+			buffers = append(buffers, cbuf)
 		}
 	} else {
 		cbuf = createBlankBuffer()
+		buffers = []*buffer{cbuf}
 	}
 
 	// main loop
@@ -191,6 +205,8 @@ func main() {
 			case "RET":
 				val := termutil.Edit(cbuf.getSel(), "Value for this cell?", refresh)
 				cbuf.setSel(val)
+			case "C-x":
+				switchBuffer()
 			case "C-t":
 				cbuf.titles = !cbuf.titles
 			case "C-s":
