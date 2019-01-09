@@ -51,6 +51,35 @@ func (buf *buffer) addRow() {
 	buf.nrows++
 }
 
+func (buf *buffer) delCurColumn() {
+	if buf.ncols <= 1 {
+		return
+	}
+	copy(buf.cols[buf.xsel:], buf.cols[buf.xsel+1:])
+	buf.cols[len(buf.cols)-1] = column{}
+	buf.cols = buf.cols[:len(buf.cols)-1]
+	buf.ncols--
+	if buf.xsel >= buf.ncols {
+		buf.xsel = buf.ncols - 1
+	}
+}
+
+func (buf *buffer) delCurRow() {
+	if buf.nrows <= 1 {
+		return
+	}
+	index := buf.ysel
+	for i := range buf.cols {
+		copy(buf.cols[i].data[index:], buf.cols[i].data[index+1:])
+		buf.cols[i].data[len(buf.cols[i].data)-1] = ""
+		buf.cols[i].data = buf.cols[i].data[:len(buf.cols[i].data)-1]
+	}
+	buf.nrows--
+	if index >= buf.nrows {
+		buf.ysel = buf.nrows - 1
+	}
+}
+
 func (buf *buffer) save() error {
 	f, err := os.Create(buf.filename)
 	if err != nil {
