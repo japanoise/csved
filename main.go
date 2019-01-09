@@ -205,6 +205,10 @@ func main() {
 			case "RET":
 				val := termutil.Edit(cbuf.getSel(), "Value for this cell?", refresh)
 				cbuf.setSel(val)
+			case "C-r":
+				cbuf.addRow()
+			case "C-l":
+				cbuf.addColumn()
 			case "C-x":
 				switchBuffer()
 			case "C-t":
