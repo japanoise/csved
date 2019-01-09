@@ -23,13 +23,13 @@ You can run it with the flag `-d` for extra debugging information.
 - `C-t` - toggle treating the first row as a title for the column
 - `C-s` - save the file (truncating it if it already exists)
 - `C-c` - quit
+- `C-l` - add co**L**umn
+- `C-k` - delete current column
+- `C-r` - add **R**ow
+- `C-u` - delete current row
 
 ## plans
 
-- Add rows - `C-r` (add **R**ow)
-- Del rows - `C-u` ("Emacs" binding)
-- Add columns - `C-l` (add co**L**umn)
-- Del columns - `C-k` (Emacs binding for kill)
 - Search - `C-f` (CUA)
 - Clipboard
 - Home and End, tab (excel-esque navigation)
