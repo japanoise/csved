@@ -122,6 +122,14 @@ func (buf *buffer) nextCell() {
 	}
 }
 
+func (buf *buffer) BOL() {
+	buf.xsel = 0
+}
+
+func (buf *buffer) EOL() {
+	buf.xsel = buf.ncols - 1
+}
+
 func createBlankBuffer() *buffer {
 	buf := buffer{}
 	buf.addColumn()

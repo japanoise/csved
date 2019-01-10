@@ -207,6 +207,10 @@ func main() {
 				cbuf.setSel(val)
 			case "TAB":
 				cbuf.nextCell()
+			case "Home", "C-a":
+				cbuf.BOL()
+			case "End", "C-e":
+				cbuf.EOL()
 			case "C-k":
 				cbuf.delCurColumn()
 			case "C-u":
