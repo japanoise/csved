@@ -27,12 +27,15 @@ You can run it with the flag `-d` for extra debugging information.
 - `C-k` - delete current column
 - `C-r` - add **R**ow
 - `C-u` - delete current row
+- `C-a`, `Home` - start of row
+- `C-e`, `End` - end of row
+- `TAB` - next cell (book order, also creates new rows if it reaches the end of
+  a sheet.)
 
 ## plans
 
 - Search - `C-f` (CUA)
 - Clipboard
-- Home and End, tab (excel-esque navigation)
 - Tab completion in a column
 
 ## copying
