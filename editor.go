@@ -111,6 +111,17 @@ func (buf *buffer) getSel() string {
 	return buf.cols[buf.xsel].data[buf.ysel]
 }
 
+func (buf *buffer) nextCell() {
+	buf.xsel++
+	if buf.xsel >= buf.ncols {
+		buf.xsel = 0
+		buf.ysel++
+		if buf.ysel >= buf.nrows {
+			buf.addRow()
+		}
+	}
+}
+
 func createBlankBuffer() *buffer {
 	buf := buffer{}
 	buf.addColumn()
